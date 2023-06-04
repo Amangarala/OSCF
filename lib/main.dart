@@ -1,9 +1,13 @@
 // ignore_for_file: library_private_types_in_public_api, use_key_in_widget_constructors
 
 import 'package:project/Import/imports.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Stripe.publishableKey =
+      "pk_test_51NEGTlSA6nOYUQ7R2IzIojJeqPyL2Y13MmhXOYYkJtArZvZqILfjotSQwUXRtmVeKthbaaQCpDbqm79eFfU3aEy800jkwkJa3x";
+  await Stripe.instance.applySettings();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

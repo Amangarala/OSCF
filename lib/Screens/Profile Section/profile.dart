@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_final_fields, unnecessary_string_interpolations, library_private_types_in_public_api, deprecated_member_use, avoid_print
+// ignore_for_file: prefer_final_fields, unnecessary_string_interpolations, library_private_types_in_public_api, deprecated_member_use, avoid_print, use_build_context_synchronously
 
 import 'dart:io';
 
@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:project/Firebase/Profilemodel.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../User Authentication/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -29,10 +32,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
     fetchUserData();
   }
 
+  // Future<void> fetchUserData() async {
+  //   String? userId = FirebaseAuth.instance.currentUser?.uid;
+  //   DocumentSnapshot userSnapshot =
+  //       await FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+  //   if (userSnapshot.exists) {
+  //     Map<String, dynamic>? userData =
+  //         userSnapshot.data() as Map<String, dynamic>?;
+
+  //     if (userData != null) {
+  //       setState(() {
+  //         username = userData['username'] ?? '';
+  //         email = userData['email'] ?? '';
+  //         _usernameController.text = username;
+  //         profileImageUrl = userData['profileImageUrl'] ?? '';
+  //       });
+  //     }
+  //   }
+  // }
+
+  // void updateUsername(String newUsername) {
+  //   setState(() {
+  //     username = newUsername;
+  //   });
+  // }
   Future<void> fetchUserData() async {
     String? userId = FirebaseAuth.instance.currentUser?.uid;
-    DocumentSnapshot userSnapshot =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+    // First, try fetching the data from the cache
+    DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get(const GetOptions(source: Source.cache));
+
+    // if (!userSnapshot.exists) {
+    //   // If the data is not available in the cache, fetch it from the server
+    //   userSnapshot = await FirebaseFirestore.instance
+    //       .collection('users')
+    //       .doc(userId)
+    //       .get(const GetOptions(source: Source.server));
+    // }
 
     if (userSnapshot.exists) {
       Map<String, dynamic>? userData =
@@ -49,10 +89,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void updateUsername(String newUsername) {
-    setState(() {
-      username = newUsername;
-    });
+  Future<void> _logout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', false);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    } catch (error) {
+      print('Error logging out: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to log out')),
+      );
+    }
   }
 
   Future<void> _uploadImage() async {
@@ -155,6 +208,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontSize: 20,
           ),
         ),
+        actions: [
+          IconButton(
+            onPressed: _logout,
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Container(

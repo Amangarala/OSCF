@@ -2,6 +2,7 @@
 
 import 'package:project/Import/imports.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:uuid/uuid.dart';
 
 class ReplyScreen extends StatefulWidget {
   final String question;
@@ -26,11 +27,7 @@ class _ReplyScreenState extends State<ReplyScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              // Handle the post button press here
-              // Store the question and answer in Firestore
               _storeQuestionAndAnswer();
-
-              // Navigate back to the AnswerScreen
             },
             child: const Text(
               'Post',
@@ -79,7 +76,6 @@ class _ReplyScreenState extends State<ReplyScreen> {
               children: [
                 IconButton(
                   onPressed: () {
-                    // Handle image selection here
                     _selectImage();
                   },
                   icon: const Icon(
@@ -115,23 +111,19 @@ class _ReplyScreenState extends State<ReplyScreen> {
     String question = widget.question;
     String answer = this.answer;
 
-    // Create a reference to the Firebase Storage bucket
     final storageRef = firebase_storage.FirebaseStorage.instance.ref();
 
-    // Generate a unique filename for the image
     String imageName = DateTime.now().microsecondsSinceEpoch.toString();
     String imagePath = 'answers/$imageName.jpg';
 
     if (image != null) {
       try {
-        // Upload the image to Firebase Storage
         await storageRef.child(imagePath).putFile(image!);
       } catch (error) {
         print('Error uploading image: $error');
       }
     }
 
-    // Get the download URL of the uploaded image
     String imageUrl = '';
     if (image != null) {
       try {
@@ -141,23 +133,21 @@ class _ReplyScreenState extends State<ReplyScreen> {
       }
     }
 
-    // Prepare the data to be stored in Firestore
     Map<String, dynamic> data = {
       'question': question,
       'answer': answer,
       'createdAt': DateTime.now().toUtc(),
+      'answerId':
+          Uuid().v4(), // Generate a unique answer ID using the Uuid package
     };
 
-    // Include the image URL in the data if available
     if (imageUrl.isNotEmpty) {
       data['imageUrl'] = imageUrl;
     }
 
     FirebaseFirestore.instance.collection('answers').add(data).then((_) {
-      // Navigate back to the AnswerScreen
       Navigator.pop(context);
     }).catchError((error) {
-      // Handle the error if any
       print('Error storing question and answer: $error');
     });
   }

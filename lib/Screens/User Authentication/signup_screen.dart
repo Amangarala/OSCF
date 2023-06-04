@@ -373,20 +373,4 @@ class _SignupScreenState extends State<SignupScreen> {
 
     await usersCollection.doc(userId).set(profileModel.toMap());
   }
-
-// Future<void> saveUserDataToDatabase(UserCredential userCredential) async {
-//   String userId = userCredential.user!.uid;
-
-//   ProfileModel profileModel = ProfileModel(
-//     uid: userId,
-//     email: _emailController.text,
-//     username: _usernameController.text.toLowerCase(),
-//     createdAt: Timestamp.now(),
-//   );
-
-//   CollectionReference usersCollection =
-//       FirebaseFirestore.instance.collection('users');
-
-//   await usersCollection.doc(userId).set(profileModel.toMap());
-// }
 }

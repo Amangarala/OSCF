@@ -1,7 +1,9 @@
 // ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors
 
+import 'package:project/Screens/Donation%20Section/donation_screen.dart';
 import 'package:project/Screens/Forum%20Section/forum_home_screen.dart';
 import 'package:project/Screens/Profile%20Section/profile.dart';
+import 'package:project/SearchScreen/search_screen.dart';
 
 import '../Import/imports.dart';
 
@@ -49,7 +51,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               // buildContainer(Icons.messenger, 'Chat\nSection'),
               buildContainer(Icons.volunteer_activism, 'Donation\nSection',
-                  HomeScreen(), context),
+                  TechDonation(), context),
             ],
           ),
         ],
@@ -106,8 +108,8 @@ class HomeScreen extends StatelessWidget {
           }),
           buildBottomIconButton(Icons.search, () {
             // Handle Search button press
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => HomeScreen()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => SearchScreen()));
           }),
           buildBottomIconButton(Icons.notifications, () {
             // Handle Notifications button press

@@ -7,15 +7,14 @@ class ProfileModel {
 
   String? profileImageUrl;
   List<String>? questions;
-  List<String>? posts;
 
-  ProfileModel(
-      {this.uid,
-      this.email,
-      this.username,
-      this.profileImageUrl,
-      this.questions,
-      this.posts});
+  ProfileModel({
+    this.uid,
+    this.email,
+    this.username,
+    this.profileImageUrl,
+    this.questions,
+  });
 
   factory ProfileModel.fromMap(Map<String, dynamic> map) {
     return ProfileModel(
@@ -24,7 +23,6 @@ class ProfileModel {
       username: map['username'],
       profileImageUrl: map['profileImageUrl'],
       questions: List<String>.from(map['questions'] ?? []),
-      posts: List<String>.from(map['posts'] ?? []),
     );
   }
 
@@ -35,7 +33,6 @@ class ProfileModel {
       'username': username,
       'profileImageUrl': profileImageUrl,
       'questions': questions,
-      'posts': posts,
     };
   }
 }

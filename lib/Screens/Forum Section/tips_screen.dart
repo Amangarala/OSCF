@@ -1,3 +1,7 @@
+// // ignore_for_file: library_private_types_in_public_api, avoid_print
+
+// ignore_for_file: library_private_types_in_public_api, unused_local_variable
+
 import 'package:project/Import/imports.dart';
 
 class TipsScreen extends StatefulWidget {
@@ -8,38 +12,7 @@ class TipsScreen extends StatefulWidget {
 }
 
 class _TipsScreenState extends State<TipsScreen> {
-  Future<List<Map<String, dynamic>>> _fetchPosts() async {
-    final snapshot = await FirebaseFirestore.instance.collection('users').get();
-    final userDataList = snapshot.docs.map((doc) => doc.data()).toList();
-
-    final posts = <Map<String, dynamic>>[];
-
-    for (final userData in userDataList) {
-      final profile = ProfileModel.fromMap(userData);
-
-      if (profile.posts != null && profile.posts!.isNotEmpty) {
-        final postList = List<String>.from(profile.posts!);
-
-        for (final post in postList) {
-          final postParts = post.split('|');
-          if (postParts.length == 2) {
-            final text = postParts[0];
-            final imageUrl = postParts[1];
-            final postMap = {
-              'type': 'post',
-              'text': text,
-              'imageUrl': imageUrl,
-              'username': profile.username,
-              'profileImage': profile.profileImageUrl,
-            };
-            posts.add(postMap);
-          }
-        }
-      }
-    }
-
-    return posts;
-  }
+  final currentUser = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -77,9 +50,8 @@ class _TipsScreenState extends State<TipsScreen> {
             itemBuilder: (BuildContext context, int index) {
               final post = posts[index];
               final text = post['text'];
-              //final imageUrl = post['imageUrl'];
+              final imageUrl = post['imageUrl'];
               final username = post['username'];
-              // final profileImage = post['profileImage'];
 
               return Container(
                 padding: const EdgeInsets.all(16.0),
@@ -93,12 +65,6 @@ class _TipsScreenState extends State<TipsScreen> {
                   children: [
                     Row(
                       children: [
-                        // CircleAvatar(
-                        //   backgroundImage: NetworkImage(profileImage),
-                        //   // You can customize the size of the profile image using radius or child constraints
-                        //   radius: 20,
-                        // ),
-                        // const SizedBox(width: 8.0),
                         Text(
                           username,
                           style: const TextStyle(
@@ -115,14 +81,27 @@ class _TipsScreenState extends State<TipsScreen> {
                         fontSize: 16,
                       ),
                     ),
-                    // if (imageUrl != null && imageUrl.isNotEmpty)
-                    //   Padding(
-                    //     padding: const EdgeInsets.only(top: 8.0),
-                    //     child: SizedBox(
-                    //       height: 100,
-                    //       child: Image.network(imageUrl),
-                    //     ),
-                    // ),
+                    if (imageUrl != null && imageUrl.isNotEmpty) ...[
+                      const SizedBox(height: 8.0),
+                      LayoutBuilder(
+                        builder:
+                            (BuildContext context, BoxConstraints constraints) {
+                          double imageSize = constraints
+                              .maxWidth; // Set the height equal to width
+                          return SizedBox(
+                            width: double
+                                .infinity, // Set the width to occupy the full container width
+                            height: imageSize,
+                            child: Image.network(
+                              imageUrl,
+                              fit: BoxFit
+                                  .cover, // Maintain the aspect ratio and cover the available space
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                    const SizedBox(height: 8.0),
                   ],
                 ),
               );
@@ -131,5 +110,66 @@ class _TipsScreenState extends State<TipsScreen> {
         },
       ),
     );
+  }
+
+  // Future<List<Map<String, dynamic>>> _fetchPosts() async {
+  //   QuerySnapshot snapshot =
+  //       await FirebaseFirestore.instance.collection('posts').get();
+
+  //   List<Map<String, dynamic>> posts = [];
+
+  //   for (QueryDocumentSnapshot doc in snapshot.docs) {
+  //     Map<String, dynamic> postData = doc.data() as Map<String, dynamic>;
+
+  //     String username = postData['username'];
+
+  //     QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+  //         .collection('users')
+  //         .where('username', isEqualTo: username)
+  //         .limit(1)
+  //         .get();
+
+  //     if (userSnapshot.docs.isNotEmpty) {
+  //       Map<String, dynamic> userData =
+  //           userSnapshot.docs.first.data() as Map<String, dynamic>;
+
+  //       String fetchedUsername = userData['username'];
+
+  //       postData['username'] = fetchedUsername;
+  //       posts.add(postData);
+  //     }
+  //   }
+
+  //   return posts;
+  // }
+  Future<List<Map<String, dynamic>>> _fetchPosts() async {
+    QuerySnapshot postSnapshot =
+        await FirebaseFirestore.instance.collection('posts').get();
+
+    List<Map<String, dynamic>> posts = [];
+
+    await Future.forEach(postSnapshot.docs, (DocumentSnapshot postDoc) async {
+      Map<String, dynamic> postData = postDoc.data() as Map<String, dynamic>;
+
+      String username = postData['username'];
+
+      QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('username', isEqualTo: username)
+          .limit(1)
+          .get();
+
+      if (userSnapshot.docs.isNotEmpty) {
+        Map<String, dynamic> userData =
+            userSnapshot.docs.first.data() as Map<String, dynamic>;
+
+        String fetchedUsername = userData['username'];
+
+        postData['username'] = fetchedUsername;
+        posts.add(postData);
+      }
+    });
+
+    return posts;
   }
 }

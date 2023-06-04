@@ -43,6 +43,15 @@ dependencies:
   firebase_database: ^10.2.1
   image_picker: ^0.8.7+5
   firebase_storage: ^11.2.1
+  http: ^0.13.6
+  like_button: ^2.0.5
+  uuid: ^3.0.7
+  share_plus: ^2.1.4
+  path_provider: ^2.0.15
+  flutter_stripe: ^9.2.0
+  stripe_sdk: ^5.0.0-nullsafety.1
+  # share_plus: ^7.0.2
+  # share: ^2.0.4
 
 dev_dependencies:
   flutter_test:
