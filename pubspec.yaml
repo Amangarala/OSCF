@@ -50,6 +50,8 @@ dependencies:
   path_provider: ^2.0.15
   flutter_stripe: ^9.2.0
   stripe_sdk: ^5.0.0-nullsafety.1
+  flutter_image_compress: ^2.0.3
+  cached_network_image: ^3.2.3
   # share_plus: ^7.0.2
   # share: ^2.0.4
 

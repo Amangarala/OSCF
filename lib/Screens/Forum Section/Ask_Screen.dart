@@ -1,4 +1,4 @@
-// ignore_for_file: use_key_in_widget_constructors, unnecessary_null_comparison, deprecated_member_use
+// ignore_for_file: use_key_in_widget_constructors, unnecessary_null_comparison, deprecated_member_use, unused_field
 
 import 'package:project/Import/imports.dart';
 
@@ -10,6 +10,7 @@ class AskScreen extends StatefulWidget {
 class _AskScreenState extends State<AskScreen> {
   final TextEditingController _questionController = TextEditingController();
   bool isQuestionSelected = true;
+  StreamSubscription<DocumentSnapshot>? _profileSubscription;
 
   @override
   void initState() {
@@ -17,19 +18,51 @@ class _AskScreenState extends State<AskScreen> {
     _loadProfileData(); // Load profile data
   }
 
+  // void _loadProfileData() {
+  //   String uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+  //   FirebaseFirestore.instance
+  //       .collection('users')
+  //       .doc(uid)
+  //       .get()
+  //       .then((snapshot) {
+  //     if (snapshot.exists) {
+  //       setState(() {});
+  //     }
+  //   });
+  // }
+
   void _loadProfileData() {
     String uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get()
-        .then((snapshot) {
+    DocumentReference userRef =
+        FirebaseFirestore.instance.collection('users').doc(uid);
+
+    _profileSubscription = userRef.snapshots().listen((snapshot) {
       if (snapshot.exists) {
         setState(() {});
       }
     });
   }
 
+  // void updateProfileQuestion(String question) async {
+  //   String uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+  //   DocumentReference userRef =
+  //       FirebaseFirestore.instance.collection('users').doc(uid);
+
+  //   DocumentSnapshot snapshot = await userRef.get();
+  //   Map<String, dynamic>? userData = snapshot.data() as Map<String, dynamic>?;
+
+  //   // Check if user data exists and retrieve the existing questions
+  //   List<String> existingQuestions =
+  //       (userData != null && userData.containsKey('questions'))
+  //           ? List<String>.from(userData['questions'])
+  //           : [];
+
+  //   // Append the new question
+  //   existingQuestions.add(question);
+
+  //   // Update only the 'questions' field
+  //   await userRef.update({'questions': existingQuestions});
+  // }
   void updateProfileQuestion(String question) async {
     String uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     DocumentReference userRef =
@@ -49,6 +82,13 @@ class _AskScreenState extends State<AskScreen> {
 
     // Update only the 'questions' field
     await userRef.update({'questions': existingQuestions});
+  }
+
+  @override
+  void dispose() {
+    _profileSubscription
+        ?.cancel(); // Cancel the subscription to avoid memory leaks
+    super.dispose();
   }
 
   @override

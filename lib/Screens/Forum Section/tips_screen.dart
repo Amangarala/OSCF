@@ -3,6 +3,7 @@
 // ignore_for_file: library_private_types_in_public_api, unused_local_variable
 
 import 'package:project/Import/imports.dart';
+import 'package:project/Screens/Forum%20Section/forum_tips_search.dart';
 
 class TipsScreen extends StatefulWidget {
   const TipsScreen({Key? key}) : super(key: key);
@@ -109,39 +110,47 @@ class _TipsScreenState extends State<TipsScreen> {
           );
         },
       ),
+      bottomNavigationBar: buildBottomNavigationBar(context),
     );
   }
 
-  // Future<List<Map<String, dynamic>>> _fetchPosts() async {
-  //   QuerySnapshot snapshot =
-  //       await FirebaseFirestore.instance.collection('posts').get();
+  Widget buildBottomNavigationBar(BuildContext context) {
+    return BottomAppBar(
+      color: const Color(0xFFD9D9D9),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          buildBottomIconButton(Icons.home, () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => HomeScreen()));
+          }),
+          buildBottomIconButton(Icons.search, () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const PostSearchScreen()));
+          }),
+          buildBottomIconButton(Icons.notifications, () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => HomeScreen()));
+          }),
+          buildBottomIconButton(Icons.person, () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()));
+          }),
+        ],
+      ),
+    );
+  }
 
-  //   List<Map<String, dynamic>> posts = [];
+  Widget buildBottomIconButton(IconData icon, VoidCallback onPressed) {
+    return IconButton(
+      icon: Icon(icon),
+      iconSize: 30,
+      onPressed: onPressed,
+    );
+  }
 
-  //   for (QueryDocumentSnapshot doc in snapshot.docs) {
-  //     Map<String, dynamic> postData = doc.data() as Map<String, dynamic>;
-
-  //     String username = postData['username'];
-
-  //     QuerySnapshot userSnapshot = await FirebaseFirestore.instance
-  //         .collection('users')
-  //         .where('username', isEqualTo: username)
-  //         .limit(1)
-  //         .get();
-
-  //     if (userSnapshot.docs.isNotEmpty) {
-  //       Map<String, dynamic> userData =
-  //           userSnapshot.docs.first.data() as Map<String, dynamic>;
-
-  //       String fetchedUsername = userData['username'];
-
-  //       postData['username'] = fetchedUsername;
-  //       posts.add(postData);
-  //     }
-  //   }
-
-  //   return posts;
-  // }
   Future<List<Map<String, dynamic>>> _fetchPosts() async {
     QuerySnapshot postSnapshot =
         await FirebaseFirestore.instance.collection('posts').get();

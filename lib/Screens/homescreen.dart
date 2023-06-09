@@ -1,11 +1,11 @@
 // ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors
 
+import 'package:project/Screens/Notification%20Section/notification.dart';
 import 'package:project/Screens/Donation%20Section/donation_screen.dart';
-import 'package:project/Screens/Forum%20Section/forum_home_screen.dart';
-import 'package:project/Screens/Profile%20Section/profile.dart';
 import 'package:project/SearchScreen/search_screen.dart';
 
 import '../Import/imports.dart';
+import 'Blog Section/blog_home.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -43,7 +43,7 @@ class HomeScreen extends StatelessWidget {
               buildContainer(Icons.question_answer, 'Forum\nSection',
                   const ForumScreen(), context),
               buildContainer(Icons.article_outlined, 'Blog/News\nSection',
-                  HomeScreen(), context),
+                  BlogScreen(), context),
             ],
           ),
           Row(
@@ -113,8 +113,8 @@ class HomeScreen extends StatelessWidget {
           }),
           buildBottomIconButton(Icons.notifications, () {
             // Handle Notifications button press
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => HomeScreen()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => NotificationView()));
           }),
           buildBottomIconButton(Icons.person, () {
             // Handle Profile button press
