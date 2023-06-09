@@ -18,19 +18,6 @@ class _AskScreenState extends State<AskScreen> {
     _loadProfileData(); // Load profile data
   }
 
-  // void _loadProfileData() {
-  //   String uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  //   FirebaseFirestore.instance
-  //       .collection('users')
-  //       .doc(uid)
-  //       .get()
-  //       .then((snapshot) {
-  //     if (snapshot.exists) {
-  //       setState(() {});
-  //     }
-  //   });
-  // }
-
   void _loadProfileData() {
     String uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     DocumentReference userRef =
@@ -43,26 +30,6 @@ class _AskScreenState extends State<AskScreen> {
     });
   }
 
-  // void updateProfileQuestion(String question) async {
-  //   String uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  //   DocumentReference userRef =
-  //       FirebaseFirestore.instance.collection('users').doc(uid);
-
-  //   DocumentSnapshot snapshot = await userRef.get();
-  //   Map<String, dynamic>? userData = snapshot.data() as Map<String, dynamic>?;
-
-  //   // Check if user data exists and retrieve the existing questions
-  //   List<String> existingQuestions =
-  //       (userData != null && userData.containsKey('questions'))
-  //           ? List<String>.from(userData['questions'])
-  //           : [];
-
-  //   // Append the new question
-  //   existingQuestions.add(question);
-
-  //   // Update only the 'questions' field
-  //   await userRef.update({'questions': existingQuestions});
-  // }
   void updateProfileQuestion(String question) async {
     String uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     DocumentReference userRef =
