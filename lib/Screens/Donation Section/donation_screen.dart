@@ -1,8 +1,6 @@
 // ignore_for_file: prefer_interpolation_to_compose_strings, avoid_print
 
-import 'dart:convert';
-
-import 'package:flutter/material.dart';
+import 'package:project/Import/imports.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_stripe/flutter_stripe.dart';
 
@@ -13,6 +11,16 @@ class TechDonation extends StatefulWidget {
   State<TechDonation> createState() => _TechDonationState();
 }
 
+void _navigateToHomeScreen(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (context) => HomeScreen(),
+    ),
+  );
+}
+
 class _TechDonationState extends State<TechDonation> {
   Map<String, dynamic>? paymentIntentData;
   final TextEditingController _amountController = TextEditingController();
@@ -21,16 +29,21 @@ class _TechDonationState extends State<TechDonation> {
     return Scaffold(
       backgroundColor: const Color(0xFF012630),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFD9D9D9),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text(
           'Donation',
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 24,
           ),
         ),
         centerTitle: true,
+        leading: IconButton(
+          onPressed: () => _navigateToHomeScreen(context),
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       body: Center(
         child: Column(
@@ -40,11 +53,6 @@ class _TechDonationState extends State<TechDonation> {
               padding: const EdgeInsets.all(20.0),
               child: TextFormField(
                 controller: _amountController,
-                // decoration: const InputDecoration(
-                //   labelText: 'Donation Amount',
-
-                //   border: OutlineInputBorder(),
-                // ),
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: const Color(0xFFD9D9D9),
@@ -100,9 +108,7 @@ class _TechDonationState extends State<TechDonation> {
       return;
     }
     try {
-      paymentIntentData = await createPaymentIntent(
-          amount, 'USD'); //json.decode(response.body);
-      // print('Response body==>${response.body.toString()}');
+      paymentIntentData = await createPaymentIntent(amount, 'USD');
       await Stripe.instance
           .initPaymentSheet(
               paymentSheetParameters: SetupPaymentSheetParameters(
@@ -110,16 +116,11 @@ class _TechDonationState extends State<TechDonation> {
                       'sk_test_51NEGTlSA6nOYUQ7RNYPN3nmZTjKi9dipn552W7478DtIAkyCDqlVNNmHzbkNHNAO3Hm70tNb2IOs96NbrOhNdxDB00FQ9UjTq2',
                   paymentIntentClientSecret:
                       paymentIntentData!['client_secret'],
-                  //applePay: PaymentSheetApplePay.,
-                  //googlePay: true,
-                  //testEnv: true,
                   customFlow: true,
                   style: ThemeMode.dark,
-                  // merchantCountryCode: 'US',
                   merchantDisplayName: 'Aman'))
           .then((value) {});
 
-      ///now finally display payment sheeet
       displayPaymentSheet();
     } catch (e, s) {
       print('Payment exception:$e$s');
@@ -128,20 +129,13 @@ class _TechDonationState extends State<TechDonation> {
 
   Future<void> displayPaymentSheet() async {
     try {
-      await Stripe.instance
-          .presentPaymentSheet(
-              //       parameters: PresentPaymentSheetParameters(
-              // clientSecret: paymentIntentData!['client_secret'],
-              // confirmPayment: true,
-              // )
-              )
-          .then((newValue) {
+      await Stripe.instance.presentPaymentSheet().then((newValue) {
         print('payment intent' + paymentIntentData!['id'].toString());
         print(
             'payment intent' + paymentIntentData!['client_secret'].toString());
         print('payment intent' + paymentIntentData!['amount'].toString());
         print('payment intent' + paymentIntentData.toString());
-        //orderPlaceApi(paymentIntentData!['id'].toString());
+
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text("paid successfully")));
 
@@ -161,7 +155,6 @@ class _TechDonationState extends State<TechDonation> {
     }
   }
 
-  //  Future<Map<String, dynamic>>
   createPaymentIntent(String amount, String currency) async {
     try {
       Map<String, dynamic> body = {

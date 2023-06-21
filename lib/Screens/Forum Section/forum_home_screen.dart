@@ -1,8 +1,7 @@
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: unnecessary_null_comparison, avoid_print
 
 import 'package:project/Import/imports.dart';
 import 'package:http/http.dart' as http;
-import 'package:project/Screens/Forum%20Section/forum_question_search.dart';
 
 class ForumScreen extends StatefulWidget {
   const ForumScreen({Key? key}) : super(key: key);
@@ -16,18 +15,36 @@ class _ForumScreenState extends State<ForumScreen> {
   late StreamSubscription<QuerySnapshot> _subscription;
   List<Map<String, dynamic>> questionAnswerList = [];
   bool isLoading = true;
+  bool isAdmin = false;
 
   @override
   void initState() {
     super.initState();
     currentUser = FirebaseAuth.instance.currentUser;
     _subscribeToAnswers();
+    checkAdminRole();
   }
 
   @override
   void dispose() {
     _unsubscribeFromAnswers();
     super.dispose();
+  }
+
+  void checkAdminRole() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final String uid = user.uid;
+
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      final String? userRole = userDoc.data()?['role'];
+
+      setState(() {
+        isAdmin = userRole == 'admin';
+      });
+    }
   }
 
   void _subscribeToAnswers() {
@@ -73,6 +90,48 @@ class _ForumScreenState extends State<ForumScreen> {
     );
   }
 
+  void _navigateToHomeScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => HomeScreen(),
+      ),
+    );
+  }
+
+  void _navigateToQuestionAnswerScreen(BuildContext context, String question) {
+    final questionAnswer = questionAnswerList.firstWhere(
+        (qa) => qa['question'] == question,
+        orElse: () => Map<String, dynamic>());
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuestionAnswerScreen(
+          question: question,
+          answer: questionAnswer['answer'] ?? '',
+          imageUrl: questionAnswer['imageUrl'] ?? '',
+        ),
+      ),
+    );
+  }
+
+  void _deleteQuestionAnswer(String documentId) {
+    FirebaseFirestore.instance
+        .collection('answers')
+        .doc(documentId)
+        .delete()
+        .then((_) {
+      // Remove the deleted question from the list
+      setState(() {
+        questionAnswerList.removeWhere((qa) => qa['documentId'] == documentId);
+      });
+    }).catchError((error) {
+      print('Error deleting question and answer: $error');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,6 +144,10 @@ class _ForumScreenState extends State<ForumScreen> {
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
+        leading: IconButton(
+          onPressed: () => _navigateToHomeScreen(context),
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       body: Column(
         children: [
@@ -140,7 +203,7 @@ class _ForumScreenState extends State<ForumScreen> {
               TextButton.icon(
                 onPressed: () => _navigateToTipsScreen(context),
                 icon: const Icon(
-                  Icons.lightbulb_outline,
+                  Icons.lightbulb,
                   color: Colors.white,
                 ),
                 label: const Text(
@@ -152,105 +215,109 @@ class _ForumScreenState extends State<ForumScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 16),
           Expanded(
             child: isLoading
-                ? Center(child: CircularProgressIndicator())
-                : questionAnswerList.isEmpty
-                    ? const Center(child: Text('No data available'))
-                    : ListView.builder(
-                        itemCount: questionAnswerList.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final question =
-                              questionAnswerList[index]['question'];
-                          final answer = questionAnswerList[index]['answer'];
-                          final imageUrl =
-                              questionAnswerList[index]['imageUrl'];
-                          final documentId =
-                              questionAnswerList[index]['documentId'];
-                          final currentLikes =
-                              questionAnswerList[index]['likes'] ?? 0;
-                          final isLiked =
-                              questionAnswerList[index]['isLiked'] ?? false;
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : ListView.builder(
+                    itemCount: questionAnswerList.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final question =
+                          questionAnswerList[index]['question'] as String;
+                      final answer =
+                          questionAnswerList[index]['answer'] as String;
+                      final documentId =
+                          questionAnswerList[index]['documentId'] as String;
 
-                          return Container(
-                            padding: const EdgeInsets.all(16.0),
-                            margin: const EdgeInsets.only(bottom: 8.0),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 8.0),
-                                Text(
-                                  'Question: $question',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8.0),
-                                Text(
-                                  'Answer: $answer',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                if (imageUrl != null &&
-                                    imageUrl.isNotEmpty) ...[
-                                  const SizedBox(height: 8.0),
-                                  LayoutBuilder(
-                                    builder: (BuildContext context,
-                                        BoxConstraints constraints) {
-                                      final imageSize = constraints.maxWidth;
-                                      return SizedBox(
-                                        width: double.infinity,
-                                        height: imageSize,
-                                        child: Image.network(
-                                          imageUrl,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                                const SizedBox(height: 8.0),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    IconButton(
-                                      onPressed: () => _updateLikes(
-                                          index, documentId, isLiked),
-                                      icon: Icon(
-                                        isLiked
-                                            ? Icons.thumb_up_alt
-                                            : Icons.thumb_up,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Likes: $currentLikes',
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                    IconButton(
-                                      onPressed: () => _shareQuestionAnswer(
-                                        question,
-                                        answer,
-                                        imageUrl,
-                                      ),
-                                      icon: const Icon(
-                                        Icons.share,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
+                      return GestureDetector(
+                        onTap: () {
+                          _navigateToQuestionAnswerScreen(context, question);
                         },
-                      ),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(
+                            bottom: 16,
+                            // left: 16,
+                            // right: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2F4F4F),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Q: $question',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'A: ${answer.split('\n').take(2).join('\n')}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  IconButton(
+                                    onPressed: () => _updateLikes(
+                                        index,
+                                        questionAnswerList[index]['documentId'],
+                                        questionAnswerList[index]['isLiked']),
+                                    icon: Icon(
+                                      questionAnswerList[index]['isLiked']
+                                          ? Icons.thumb_up_alt
+                                          : Icons.thumb_up,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Likes: ${questionAnswerList[index]['likes']}',
+                                    style: const TextStyle(
+                                        fontSize: 16, color: Colors.white),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => _shareQuestionAnswer(
+                                      question,
+                                      answer,
+                                      questionAnswerList[index]['imageUrl'],
+                                    ),
+                                    icon: const Icon(
+                                      Icons.share,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  isAdmin
+                                      ? IconButton(
+                                          onPressed: () =>
+                                              _deleteQuestionAnswer(documentId),
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const SizedBox(
+                                          width: 0,
+                                        ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -272,7 +339,7 @@ class _ForumScreenState extends State<ForumScreen> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => QuestionSearchScreen()));
+                    builder: (context) => const QuestionSearchScreen()));
           }),
           buildBottomIconButton(Icons.notifications, () {
             Navigator.push(
@@ -305,14 +372,10 @@ class _ForumScreenState extends State<ForumScreen> {
       final likes = doc.data()['likes'] ?? 0;
       final likedBy = doc.data()['likedBy'] ?? [];
 
-      dynamic image;
       if (imageUrl.isNotEmpty) {
         try {
           final response = await http.get(Uri.parse(imageUrl));
-          if (response.statusCode == 200) {
-            final bytes = response.bodyBytes;
-            image = base64Encode(bytes);
-          }
+          if (response.statusCode == 200) {}
         } catch (error) {
           print('Error fetching image: $error');
         }
@@ -324,7 +387,6 @@ class _ForumScreenState extends State<ForumScreen> {
       return {
         'question': question,
         'answer': answer,
-        'image': image ?? '',
         'imageUrl': imageUrl,
         'likes': likes,
         'documentId': doc.id,
@@ -332,19 +394,19 @@ class _ForumScreenState extends State<ForumScreen> {
       };
     }));
 
-    setState(() {
-      questionAnswerList = updatedQuestionAnswerList;
-      isLoading = false; // Set isLoading to false after data is fetched
-    });
+    if (mounted) {
+      setState(() {
+        questionAnswerList = updatedQuestionAnswerList;
+        isLoading = false;
+      });
+    }
   }
 
-  // Rest of the code remains the same...
   void _updateLikes(int index, String documentId, bool isLiked) {
     final currentUser = FirebaseAuth.instance.currentUser;
     final currentLikes = questionAnswerList[index]['likes'] ?? 0;
 
     if (isLiked) {
-      // Decrement like count and remove user from likedBy list
       FirebaseFirestore.instance.collection('answers').doc(documentId).update({
         'likes': currentLikes - 1,
         'likedBy': FieldValue.arrayRemove([currentUser?.uid])
@@ -357,7 +419,6 @@ class _ForumScreenState extends State<ForumScreen> {
         print('Error updating likes: $error');
       });
     } else {
-      // Increment like count and add user to likedBy list
       FirebaseFirestore.instance.collection('answers').doc(documentId).update({
         'likes': currentLikes + 1,
         'likedBy': FieldValue.arrayUnion([currentUser?.uid])
@@ -378,6 +439,9 @@ class _ForumScreenState extends State<ForumScreen> {
     String imageUrl,
   ) async {
     final shareText = 'Question: $question\n\nAnswer: $answer';
+    const appLink = 'https://your-app-store-link.com';
+
+    final textWithLink = '$shareText\n\nGet the app: $appLink';
 
     if (imageUrl != null && imageUrl.isNotEmpty) {
       try {
@@ -390,14 +454,14 @@ class _ForumScreenState extends State<ForumScreen> {
 
           Share.shareFiles([imagePath], text: shareText);
         } else {
-          Share.share(shareText);
+          Share.share(textWithLink);
         }
       } catch (e) {
         print('Error sharing image: $e');
-        Share.share(shareText);
+        Share.share(textWithLink);
       }
     } else {
-      Share.share(shareText);
+      Share.share(textWithLink);
     }
   }
 }

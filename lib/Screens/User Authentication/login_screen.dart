@@ -30,7 +30,6 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoggedIn = true;
       });
 
-      // Navigate to the home screen or any other screen
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -56,7 +55,6 @@ class _LoginScreenState extends State<LoginScreen> {
           _isLoggedIn = true;
         });
 
-        // Navigate to the home screen or any other screen
         Navigator.pushReplacementNamed(context, '/home');
       } catch (e) {
         setState(() {
@@ -200,7 +198,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(
                         height: 5.0,
                       ),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -219,15 +216,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                //decoration: TextDecoration.underline,
                               ),
                             ),
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 20.0),
-
                       TextButton(
                         onPressed: _isLoading ? null : loginUser,
                         style: ButtonStyle(
@@ -256,9 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(
-                          height: 15.0), // Add some spacing between the buttons
-
+                      const SizedBox(height: 15.0),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -288,9 +280,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _navigateToSignUpScreen() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) =>
-              SignupScreen()), // Replace `LoginScreen` with your actual login screen widget
+      MaterialPageRoute(builder: (context) => SignupScreen()),
     );
   }
 }

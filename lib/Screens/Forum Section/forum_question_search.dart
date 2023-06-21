@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:project/Import/imports.dart';
 
 class QuestionSearchScreen extends StatefulWidget {
@@ -30,8 +32,15 @@ class _QuestionSearchScreenState extends State<QuestionSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF012630),
       appBar: AppBar(
-        title: const Text("Firebase Search"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          "Question Search",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -39,8 +48,10 @@ class _QuestionSearchScreenState extends State<QuestionSearchScreen> {
             padding: const EdgeInsets.all(15.0),
             child: TextField(
               decoration: const InputDecoration(
+                filled: true,
+                fillColor: Color(0xFFD9D9D9),
                 border: OutlineInputBorder(),
-                hintText: "Search Question Here",
+                hintText: "Search Questions Here",
               ),
               onChanged: (query) {
                 searchFromFirebase(query);
@@ -55,8 +66,14 @@ class _QuestionSearchScreenState extends State<QuestionSearchScreen> {
                 final answer = searchResult[index]['answer'] as String?;
 
                 return ListTile(
-                  title: Text(question ?? 'No Question'),
-                  subtitle: Text(answer ?? 'No Answer'),
+                  title: Text(
+                    question ?? 'No Question',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    answer ?? 'No Answer',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 );
               },
             ),

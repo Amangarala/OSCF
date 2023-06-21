@@ -1,12 +1,13 @@
-// ignore_for_file: unnecessary_null_comparison, avoid_print, use_build_context_synchronously
+// ignore_for_file: unnecessary_null_comparison, avoid_print, use_build_context_synchronously, deprecated_member_use, library_private_types_in_public_api
 
 import 'package:project/Import/imports.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class CreateArticles extends StatefulWidget {
   const CreateArticles({Key? key}) : super(key: key);
 
   @override
-  State<CreateArticles> createState() => _CreateArticlesState();
+  _CreateArticlesState createState() => _CreateArticlesState();
 }
 
 class _CreateArticlesState extends State<CreateArticles> {
@@ -16,7 +17,6 @@ class _CreateArticlesState extends State<CreateArticles> {
 
   Future<void> _getImage() async {
     final pickedFile =
-        // ignore: deprecated_member_use
         await ImagePicker().getImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
@@ -42,18 +42,85 @@ class _CreateArticlesState extends State<CreateArticles> {
       }
     }
 
+    if (_titleController.text.isEmpty || _image == null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Missing Information'),
+            content: const Text('Please provide a title and upload an image.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close the dialog
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
     final articleData = {
       'title': _titleController.text,
       'description': _descriptionController.text,
-      'image': _image != null ? _image!.path : '',
       'username': username ?? '',
       'createdAt': FieldValue.serverTimestamp(),
     };
 
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+
     try {
-      await FirebaseFirestore.instance.collection('articles').add(articleData);
+      final firebaseStorageRef = firebase_storage.FirebaseStorage.instance
+          .ref()
+          .child('article_images')
+          .child(DateTime.now().millisecondsSinceEpoch.toString());
+
+      final uploadTask = firebaseStorageRef.putFile(_image!);
+      final snapshot = await uploadTask.whenComplete(() {});
+
+      final downloadURL = await snapshot.ref.getDownloadURL();
+
+      articleData['image'] = downloadURL;
+
+      final docRef = await FirebaseFirestore.instance
+          .collection('articles')
+          .add(articleData);
+
+      await docRef.update({'id': docRef.id});
+
+      Navigator.pop(context);
+      Navigator.pop(context);
     } catch (error) {
       print('Error creating article: $error');
+      Navigator.pop(context);
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content:
+                const Text('An error occurred while creating the article.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
@@ -66,45 +133,29 @@ class _CreateArticlesState extends State<CreateArticles> {
         elevation: 0,
         actions: [
           TextButton(
-            onPressed: () async {
-              await _createArticle();
-              Navigator.pop(context); // Navigate back to the previous screen
-            },
-            child: const Text(
-              'Create',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-            ),
+            onPressed: _createArticle,
+            child: const Text('Publish', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextField(
                 controller: _titleController,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
-                  hintText: 'Title',
-                  hintStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white70),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
+                  labelText: 'Title',
+                  labelStyle: TextStyle(color: Colors.white),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 16.0),
               TextField(
                 controller: _descriptionController,
                 style: const TextStyle(color: Colors.white),
-                maxLines: null, // Allows for multiple lines
+                maxLines: null,
                 decoration: const InputDecoration(
                   hintText: 'Description',
                   hintStyle: TextStyle(color: Colors.white70),
@@ -116,56 +167,25 @@ class _CreateArticlesState extends State<CreateArticles> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: _getImage,
-                child: Container(
-                  color: Colors.transparent,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Image ',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
+              const SizedBox(height: 16.0),
+              Row(
+                children: [
+                  _image != null
+                      ? SizedBox(
+                          width: 100,
+                          height: 100,
+                          child: Image.file(_image!),
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.image, color: Colors.white),
+                          onPressed: _getImage,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      _image != null
-                          ? Image.file(
-                              _image!,
-                              height: 120,
-                              width: 120,
-                              fit: BoxFit.cover,
-                            )
-                          : Container(
-                              height: 120,
-                              width: 120,
-                              decoration: BoxDecoration(
-                                color: Colors.white70,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ],
-                  ),
-                ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
   }
 }

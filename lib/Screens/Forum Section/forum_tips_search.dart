@@ -32,8 +32,15 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF012630),
       appBar: AppBar(
-        title: const Text("Firebase Search"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          "Post Search",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -41,6 +48,8 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
             padding: const EdgeInsets.all(15.0),
             child: TextField(
               decoration: const InputDecoration(
+                filled: true,
+                fillColor: Color(0xFFD9D9D9),
                 border: OutlineInputBorder(),
                 hintText: "Search Posts Here",
               ),
@@ -57,8 +66,14 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
                 final text = searchResult[index]['text'] as String?;
 
                 return ListTile(
-                  title: Text(username ?? 'No username'),
-                  subtitle: Text(text ?? 'No posts'),
+                  title: Text(
+                    username ?? 'No username',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    text ?? 'No posts',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 );
               },
             ),

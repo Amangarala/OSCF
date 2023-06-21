@@ -18,7 +18,7 @@ class _PostScreenState extends State<PostScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProfileData(); // Load profile data
+    _loadProfileData();
   }
 
   @override
@@ -32,12 +32,10 @@ class _PostScreenState extends State<PostScreen> {
     FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
-        .snapshots() // Use snapshots() instead of get()
+        .snapshots()
         .listen((snapshot) {
       if (snapshot.exists) {
-        setState(() {
-          // Update your UI with the new data
-        });
+        setState(() {});
       }
     });
   }
@@ -103,7 +101,7 @@ class _PostScreenState extends State<PostScreen> {
       'text': newPost,
       'imageUrl': imageUrl,
       'username': username,
-      'timestamp': FieldValue.serverTimestamp(),
+      'createdAt': FieldValue.serverTimestamp(),
     });
 
     _postController.clear();
@@ -111,15 +109,12 @@ class _PostScreenState extends State<PostScreen> {
       selectedImage = null;
     });
 
-    // Remove the Navigator.push line to stay on the same screen
-
-    // Listen for changes in the "posts" collection
     FirebaseFirestore.instance
         .collection('posts')
         .snapshots()
-        .listen((snapshot) {
-      // Update your UI with the new posts data
-    });
+        .listen((snapshot) {});
+
+    Navigator.pop(context);
   }
 
   Future<String> _uploadImage() async {
@@ -159,7 +154,7 @@ class _PostScreenState extends State<PostScreen> {
           TextButton(
             onPressed: _addPost,
             child: const Text(
-              'Add',
+              'Post',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -255,7 +250,6 @@ class _PostScreenState extends State<PostScreen> {
               children: [
                 IconButton(
                   onPressed: () {
-                    // Handle image selection here
                     _selectImage();
                   },
                   icon: const Icon(

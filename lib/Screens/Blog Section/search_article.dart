@@ -32,8 +32,15 @@ class _ArticleSearchScreenState extends State<ArticleSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF012630),
       appBar: AppBar(
-        title: const Text("Firebase Search"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          "Article Search",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -41,6 +48,8 @@ class _ArticleSearchScreenState extends State<ArticleSearchScreen> {
             padding: const EdgeInsets.all(15.0),
             child: TextField(
               decoration: const InputDecoration(
+                filled: true,
+                fillColor: Color(0xFFD9D9D9),
                 border: OutlineInputBorder(),
                 hintText: "Search Articles Here",
               ),
@@ -58,8 +67,14 @@ class _ArticleSearchScreenState extends State<ArticleSearchScreen> {
                     searchResult[index]['description'] as String?;
 
                 return ListTile(
-                  title: Text(title ?? 'No title'),
-                  subtitle: Text(description ?? 'No description'),
+                  title: Text(
+                    title ?? 'No title',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    description ?? 'No description',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 );
               },
             ),

@@ -2,7 +2,6 @@
 
 import 'package:project/Import/imports.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-import 'package:uuid/uuid.dart';
 
 class ReplyScreen extends StatefulWidget {
   final String question;

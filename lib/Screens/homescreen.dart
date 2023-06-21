@@ -1,11 +1,6 @@
 // ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors
 
-import 'package:project/Screens/Notification%20Section/notification.dart';
-import 'package:project/Screens/Donation%20Section/donation_screen.dart';
-import 'package:project/SearchScreen/search_screen.dart';
-
 import '../Import/imports.dart';
-import 'Blog Section/blog_home.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -23,6 +18,7 @@ class HomeScreen extends StatelessWidget {
             letterSpacing: 2,
           ),
         ),
+        automaticallyImplyLeading: false,
         centerTitle: true,
       ),
       body: Column(
@@ -32,9 +28,9 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               buildContainer(
-                  Icons.extension, 'My\nProjects', HomeScreen(), context),
+                  Icons.extension, 'Projects', projectsscreen(), context),
               buildContainer(Icons.folder_open, 'Directory\nSection',
-                  HomeScreen(), context),
+                  directorysscreen(), context),
             ],
           ),
           Row(
@@ -49,7 +45,6 @@ class HomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // buildContainer(Icons.messenger, 'Chat\nSection'),
               buildContainer(Icons.volunteer_activism, 'Donation\nSection',
                   TechDonation(), context),
             ],
@@ -64,7 +59,6 @@ class HomeScreen extends StatelessWidget {
       BuildContext context) {
     return InkWell(
       onTap: () {
-        // Handle button tap here
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => destinationScreen),
@@ -102,22 +96,18 @@ class HomeScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           buildBottomIconButton(Icons.home, () {
-            // Handle Home button press
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => HomeScreen()));
           }),
           buildBottomIconButton(Icons.search, () {
-            // Handle Search button press
             Navigator.push(context,
-                MaterialPageRoute(builder: (context) => SearchScreen()));
+                MaterialPageRoute(builder: (context) => CommonSearchScreen()));
           }),
           buildBottomIconButton(Icons.notifications, () {
-            // Handle Notifications button press
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => NotificationView()));
           }),
           buildBottomIconButton(Icons.person, () {
-            // Handle Profile button press
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => ProfileScreen()));
           }),

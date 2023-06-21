@@ -1,6 +1,5 @@
 // ignore_for_file: unused_field, prefer_final_fields, prefer_const_constructors, use_build_context_synchronously, use_key_in_widget_constructors, library_private_types_in_public_api, avoid_print, sort_child_properties_last, unrelated_type_equality_checks, unused_local_variable, deprecated_member_use
 
-import 'package:project/Firebase/Profilemodel.dart';
 import 'package:project/Import/imports.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -337,9 +336,7 @@ class _SignupScreenState extends State<SignupScreen> {
   void _navigateToLoginScreen() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) =>
-              LoginScreen()), // Replace `LoginScreen` with your actual login screen widget
+      MaterialPageRoute(builder: (context) => LoginScreen()),
     );
   }
 
@@ -366,7 +363,6 @@ class _SignupScreenState extends State<SignupScreen> {
     profileModel.email = _emailController.text;
     profileModel.uid = userId;
     profileModel.username = _usernameController.text.toLowerCase();
-    //profileModel.createdAt = DateTime.now().toUtc();
 
     CollectionReference usersCollection =
         FirebaseFirestore.instance.collection('users');

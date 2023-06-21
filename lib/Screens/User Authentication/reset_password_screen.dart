@@ -62,7 +62,6 @@ class ResetPasswordScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF012630),
       body: Container(
         padding: const EdgeInsets.only(
-          //top: MediaQuery.of(context).size.height * 0.18,
           right: 35,
           left: 35,
         ),

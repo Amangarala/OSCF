@@ -12,45 +12,11 @@ class ArticleDetailScreen extends StatefulWidget {
 }
 
 class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
-  String imageUrl = '';
-
-  @override
-  void initState() {
-    super.initState();
-    fetchImage();
-  }
-
-  Future<void> fetchImage() async {
-    final String imageId = widget.articleData['image'] ?? '';
-    if (imageId.isNotEmpty) {
-      try {
-        final Reference ref = FirebaseStorage.instance.ref().child(imageId);
-        final String downloadUrl = await ref.getDownloadURL();
-        setState(() {
-          imageUrl = downloadUrl;
-        });
-      } catch (e) {
-        print('Error fetching image: $e');
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final String title = widget.articleData['title'] ?? '';
     final String description = widget.articleData['description'] ?? '';
-
-    Widget imageWidget;
-    if (imageUrl.isNotEmpty) {
-      imageWidget = Image.network(
-        imageUrl,
-        height: 200,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      );
-    } else {
-      imageWidget = Container(); // Empty container if no image is available
-    }
+    final String imageUrl = widget.articleData['image'] ?? '';
 
     return Scaffold(
       backgroundColor: const Color(0xff012630),
@@ -59,31 +25,41 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+        child: IntrinsicHeight(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-              GestureDetector(
-                onTap: () {
-                  // Handle image tap if needed
-                },
-                child: imageWidget,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                description,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
+              const SizedBox(height: 20),
+              if (imageUrl.isNotEmpty)
+                GestureDetector(
+                  onTap: () {},
+                  child: Image.network(
+                    imageUrl,
+                    // height: 400,
+                    width: double.infinity,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

@@ -1,9 +1,6 @@
-// // ignore_for_file: library_private_types_in_public_api, avoid_print
-
-// ignore_for_file: library_private_types_in_public_api, unused_local_variable
+// ignore_for_file: library_private_types_in_public_api, avoid_print, use_build_context_synchronously
 
 import 'package:project/Import/imports.dart';
-import 'package:project/Screens/Forum%20Section/forum_tips_search.dart';
 
 class TipsScreen extends StatefulWidget {
   const TipsScreen({Key? key}) : super(key: key);
@@ -14,6 +11,29 @@ class TipsScreen extends StatefulWidget {
 
 class _TipsScreenState extends State<TipsScreen> {
   final currentUser = FirebaseAuth.instance.currentUser;
+  bool isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    checkAdminRole();
+  }
+
+  void checkAdminRole() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final String uid = user.uid;
+
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      final String? userRole = userDoc.data()?['role'];
+
+      setState(() {
+        isAdmin = userRole == 'admin';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +73,13 @@ class _TipsScreenState extends State<TipsScreen> {
               final text = post['text'];
               final imageUrl = post['imageUrl'];
               final username = post['username'];
+              final documentId = post['documentId'];
 
               return Container(
                 padding: const EdgeInsets.all(16.0),
                 margin: const EdgeInsets.only(bottom: 8.0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFF2F4F4F),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: Column(
@@ -69,6 +90,7 @@ class _TipsScreenState extends State<TipsScreen> {
                         Text(
                           username,
                           style: const TextStyle(
+                            color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -79,6 +101,7 @@ class _TipsScreenState extends State<TipsScreen> {
                     Text(
                       'Post: $text',
                       style: const TextStyle(
+                        color: Colors.white,
                         fontSize: 16,
                       ),
                     ),
@@ -87,22 +110,32 @@ class _TipsScreenState extends State<TipsScreen> {
                       LayoutBuilder(
                         builder:
                             (BuildContext context, BoxConstraints constraints) {
-                          double imageSize = constraints
-                              .maxWidth; // Set the height equal to width
+                          double imageSize = constraints.maxWidth;
                           return SizedBox(
-                            width: double
-                                .infinity, // Set the width to occupy the full container width
+                            width: double.infinity,
                             height: imageSize,
                             child: Image.network(
                               imageUrl,
-                              fit: BoxFit
-                                  .cover, // Maintain the aspect ratio and cover the available space
+                              fit: BoxFit.cover,
                             ),
                           );
                         },
                       ),
                     ],
                     const SizedBox(height: 8.0),
+                    if (isAdmin)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            onPressed: () => _deletePost(documentId),
+                            icon: const Icon(
+                              Icons.delete,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               );
@@ -159,6 +192,7 @@ class _TipsScreenState extends State<TipsScreen> {
 
     await Future.forEach(postSnapshot.docs, (DocumentSnapshot postDoc) async {
       Map<String, dynamic> postData = postDoc.data() as Map<String, dynamic>;
+      postData['documentId'] = postDoc.id;
 
       String username = postData['username'];
 
@@ -180,5 +214,22 @@ class _TipsScreenState extends State<TipsScreen> {
     });
 
     return posts;
+  }
+
+  void _deletePost(String documentId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(documentId)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Post deleted successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to delete post')),
+      );
+    }
   }
 }

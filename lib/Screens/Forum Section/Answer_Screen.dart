@@ -12,11 +12,29 @@ class AnswerScreen extends StatefulWidget {
 class _AnswerScreenState extends State<AnswerScreen> {
   late StreamSubscription<QuerySnapshot> _subscription;
   List<ProfileModel> profiles = [];
+  bool isAdmin = false;
 
   @override
   void initState() {
     super.initState();
     _subscribeToProfiles();
+    checkAdminRole();
+  }
+
+  void checkAdminRole() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final String uid = user.uid;
+
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      final String? userRole = userDoc.data()?['role'];
+
+      setState(() {
+        isAdmin = userRole == 'admin'; // Set isAdmin based on the user's role
+      });
+    }
   }
 
   @override
@@ -32,7 +50,7 @@ class _AnswerScreenState extends State<AnswerScreen> {
         .listen((snapshot) {
       setState(() {
         profiles = snapshot.docs.map((doc) {
-          return ProfileModel.fromMap(doc.data() as Map<String, dynamic>);
+          return ProfileModel.fromMap(doc.data());
         }).toList();
       });
     });
@@ -40,6 +58,22 @@ class _AnswerScreenState extends State<AnswerScreen> {
 
   void _unsubscribeFromProfiles() {
     _subscription.cancel();
+  }
+
+  void _navigateToForumScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => const ForumScreen(),
+      ),
+    );
+  }
+
+  void _deleteQuestion(String question, String userId) {
+    FirebaseFirestore.instance.collection('users').doc(userId).update({
+      'questions': FieldValue.arrayRemove([question]),
+    });
   }
 
   @override
@@ -53,6 +87,10 @@ class _AnswerScreenState extends State<AnswerScreen> {
           'Answer',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
+        leading: IconButton(
+          onPressed: () => _navigateToForumScreen(context),
+          icon: const Icon(Icons.arrow_back),
+        ),
         centerTitle: true,
       ),
       body: ListView.builder(
@@ -63,7 +101,7 @@ class _AnswerScreenState extends State<AnswerScreen> {
             // If no questions asked, don't show the username
             return Container();
           }
-          // Display each question in a separate container
+
           return Column(
             children: profile.questions!.map((question) {
               return Container(
@@ -71,20 +109,30 @@ class _AnswerScreenState extends State<AnswerScreen> {
                 child: Column(
                   children: [
                     Container(
-                      color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2F4F4F),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage:
-                              NetworkImage(profile.profileImageUrl ?? ''),
-                          radius: 15, // Adjust the radius as needed
-                        ),
+                        leading: profile.profileImageUrl != null &&
+                                profile.profileImageUrl!.isNotEmpty
+                            ? CircleAvatar(
+                                backgroundImage:
+                                    NetworkImage(profile.profileImageUrl!),
+                                radius: 15, // Adjust the radius as needed
+                              )
+                            : const CircleAvatar(
+                                backgroundImage:
+                                    AssetImage('assets/images/OSCF logo.png'),
+                                radius: 15, // Adjust the radius as needed
+                              ),
                         title: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               profile.username ?? '',
                               style: const TextStyle(
-                                color: Colors.black,
+                                color: Colors.white,
                                 fontSize: 22,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -95,24 +143,63 @@ class _AnswerScreenState extends State<AnswerScreen> {
                         subtitle: Text(
                           question,
                           style: const TextStyle(
-                            color: Colors.black54,
+                            color: Colors.white,
                             fontSize: 18,
                           ),
                         ),
-                        trailing: IconButton(
-                          onPressed: () {
-                            // Handle the button press here
-                            // You can navigate to another screen or perform any desired action
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ReplyScreen(
-                                  question: question, // Pass the question here
-                                ), // Replace with your ReplyScreen widget
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isAdmin)
+                              IconButton(
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Text('Confirmation'),
+                                        content: const Text(
+                                            'Are you sure you want to delete this question?'),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            onPressed: () {
+                                              _deleteQuestion(
+                                                  question, profile.uid!);
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: const Text('Delete'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: const Text('Cancel'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                                icon: const Icon(Icons.delete,
+                                    color: Colors.white),
                               ),
-                            );
-                          },
-                          icon: const Icon(Icons.edit),
+                            IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ReplyScreen(
+                                      question: question,
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
