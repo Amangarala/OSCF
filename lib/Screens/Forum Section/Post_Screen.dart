@@ -137,14 +137,14 @@ class _PostScreenState extends State<PostScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF012630),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF012630),
         leading: IconButton(
           icon: const Icon(
             Icons.close,
             color: Colors.black,
           ),
           onPressed: () {
-            Navigator.push(
+            Navigator.pop(
               context,
               MaterialPageRoute(builder: (context) => const ForumScreen()),
             );

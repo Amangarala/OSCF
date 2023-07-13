@@ -8,7 +8,8 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF012630),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFD9D9D9),
+        backgroundColor: Color(0xFFD9D9D9),
+        elevation: 2,
         title: const Text(
           'Home',
           style: TextStyle(
@@ -28,8 +29,8 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               buildContainer(
-                  Icons.extension, 'Projects', projectsscreen(), context),
-              buildContainer(Icons.folder_open, 'Directory\nSection',
+                  Icons.library_add, 'Projects', projectsscreen(), context),
+              buildContainer(Icons.folder_open, 'Major\nProjects',
                   directorysscreen(), context),
             ],
           ),
@@ -38,8 +39,8 @@ class HomeScreen extends StatelessWidget {
             children: [
               buildContainer(Icons.question_answer, 'Forum\nSection',
                   const ForumScreen(), context),
-              buildContainer(Icons.article_outlined, 'Blog/News\nSection',
-                  BlogScreen(), context),
+              buildContainer(
+                  Icons.article_outlined, 'Articles', BlogScreen(), context),
             ],
           ),
           Row(
@@ -68,7 +69,7 @@ class HomeScreen extends StatelessWidget {
         height: 150,
         width: 150,
         decoration: BoxDecoration(
-          color: const Color(0xFFD9D9D9),
+          color: Color(0xFFD9D9D9),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -91,7 +92,8 @@ class HomeScreen extends StatelessWidget {
 
   Widget buildBottomNavigationBar(BuildContext context) {
     return BottomAppBar(
-      color: const Color(0xFFD9D9D9),
+      color: Color(0xFFD9D9D9),
+      elevation: 2,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -108,7 +110,7 @@ class HomeScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => NotificationView()));
           }),
           buildBottomIconButton(Icons.person, () {
-            Navigator.push(context,
+            Navigator.pushReplacement(context,
                 MaterialPageRoute(builder: (context) => ProfileScreen()));
           }),
         ],

@@ -55,14 +55,14 @@ class _AskScreenState extends State<AskScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF012630),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF012630),
         leading: IconButton(
           icon: const Icon(
             Icons.close,
-            color: Colors.black,
+            color: Colors.white,
           ),
           onPressed: () {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const ForumScreen()),
             );
@@ -89,7 +89,7 @@ class _AskScreenState extends State<AskScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: Colors.white,
               ),
             ),
           ),
@@ -114,7 +114,7 @@ class _AskScreenState extends State<AskScreen> {
                       : null,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => AskScreen()),
                       );
@@ -139,7 +139,7 @@ class _AskScreenState extends State<AskScreen> {
                       : null,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                             builder: (context) => const PostScreen()),

@@ -18,15 +18,38 @@ class _createmajorScreenState extends State<createmajorScreen> {
   final _urlController = TextEditingController();
 
   void _submitForm() {
+    bool _isValidUrl(String url) {
+      const pattern = r'^(http(s)?://)?'
+          r'((([a-zA-Z0-9-]+\.){1,2}[a-zA-Z]{2,}|'
+          r'((\d{1,3}\.){3}\d{1,3}))|'
+          r'localhost)(:\d{1,5})?(/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*)?'
+          r'([?][-a-zA-Z0-9+&@#/%=~_|])?';
+      final regex = RegExp(pattern);
+      return regex.hasMatch(url);
+    }
+
     if (_formKey.currentState!.validate()) {
+      // Form fields are valid, proceed with data submission
+
+      // Retrieve the field values
       final String title = _titleController.text;
       final String description = _descriptionController.text;
       final String features = _featuresController.text;
       final String techStack = _techStackController.text;
       final String url = _urlController.text;
 
+      if (!_isValidUrl(url)) {
+        // Invalid URL entered
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid URL')),
+        );
+        return;
+      }
+
+      // Get the current user
       final User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        // User is signed in, retrieve the username from the "users" collection
         FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -35,7 +58,8 @@ class _createmajorScreenState extends State<createmajorScreen> {
           if (docSnapshot.exists) {
             final String username = docSnapshot.get('username');
 
-            FirebaseFirestore.instance.collection('majorprojects').add({
+            // Save the data to Firebase Firestore
+            FirebaseFirestore.instance.collection('projects').add({
               'title': title,
               'description': description,
               'features': features,
@@ -43,45 +67,52 @@ class _createmajorScreenState extends State<createmajorScreen> {
               'url': url,
               'username': username,
             }).then((docRef) {
-              final String projectId = docRef.id;
+              final String projectId =
+                  docRef.id; // Retrieve the generated project ID
 
-              docRef.update({'projectid': projectId}).then((_) {
+              // Update the project document with the project ID
+              docRef.update({'projectId': projectId}).then((_) {
+                // Data saved successfully
                 print('Project created successfully with ID: $projectId');
-
+                // Reset the form
                 _titleController.clear();
                 _descriptionController.clear();
                 _featuresController.clear();
                 _techStackController.clear();
                 _urlController.clear();
-
+                // Show a success message to the user
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Project created successfully')),
                 );
               }).catchError((error) {
+                // Error occurred while updating the project document
                 print('Error updating project document: $error');
-
+                // Show an error message to the user
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Error creating project')),
                 );
               });
             }).catchError((error) {
+              // Error occurred while saving data
               print('Error creating project: $error');
-
+              // Show an error message to the user
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Error creating project')),
               );
             });
           }
         }).catchError((error) {
+          // Error occurred while retrieving the username
           print('Error retrieving username: $error');
-
+          // Show an error message to the user
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Error retrieving username')),
           );
         });
       } else {
+        // User is not signed in
         print('User is not signed in');
-
+        // Show an error message to the user
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('User is not signed in')),
         );

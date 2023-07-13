@@ -21,8 +21,7 @@ class _ReplyScreenState extends State<ReplyScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF012630),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: const Color(0xFF012630),
         actions: [
           TextButton(
             onPressed: () {

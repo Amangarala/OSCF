@@ -15,7 +15,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String email = '';
   String profileImageUrl = '';
   bool isUploading = false;
-
+  TextEditingController _oldPasswordController = TextEditingController();
+  TextEditingController _newPasswordController = TextEditingController();
   TextEditingController _usernameController = TextEditingController();
 
   @override
@@ -57,6 +58,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
       print('Error logging out: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to log out')),
+      );
+    }
+  }
+
+  Future<void> _resetPassword() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      final oldPassword = _oldPasswordController.text.trim();
+      final newPassword = _newPasswordController.text.trim();
+
+      if (oldPassword.isNotEmpty && newPassword.isNotEmpty) {
+        try {
+          final email = user.email;
+          final credential = EmailAuthProvider.credential(
+              email: email!, password: oldPassword);
+          await user.reauthenticateWithCredential(credential);
+
+          if (oldPassword == newPassword) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text(
+                      'New password should be different from old password')),
+            );
+          } else {
+            await user.updatePassword(newPassword);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Password reset successful')),
+            );
+          }
+        } catch (error) {
+          print('Error reauthenticating user: $error');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to reset password')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Please enter both old and new passwords')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not found')),
       );
     }
   }
@@ -137,6 +183,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  void _navigateToHomeScreen(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => HomeScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,6 +206,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Color(0xFFD9D9D9),
             fontSize: 20,
           ),
+        ),
+        leading: IconButton(
+          onPressed: () => _navigateToHomeScreen(context),
+          icon: const Icon(Icons.arrow_back),
         ),
         actions: [
           IconButton(
@@ -251,7 +311,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 40),
+                TextFormField(
+                  controller: _oldPasswordController,
+                  obscureText: true,
+                  style: const TextStyle(
+                      color: Colors.white), // Set label text color
+                  decoration: const InputDecoration(
+                    labelText: 'old Password',
+                    labelStyle:
+                        TextStyle(color: Colors.white), // Set label text color
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.white), // Set border color
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.white), // Set border color
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
+                TextFormField(
+                  controller: _newPasswordController,
+                  obscureText: true,
+                  style: const TextStyle(
+                      color: Colors.white), // Set label text color
+                  decoration: const InputDecoration(
+                    labelText: 'New Password',
+                    labelStyle:
+                        TextStyle(color: Colors.white), // Set label text color
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.white), // Set border color
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.white), // Set border color
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // TextFormField(
+                //   controller: _confirmPasswordController,
+                //   obscureText: true,
+                //   style: const TextStyle(color: Colors.white),
+                //   decoration: const InputDecoration(
+                //     labelText: 'Confirm Password',
+                //     labelStyle: TextStyle(color: Colors.white),
+                //     enabledBorder: OutlineInputBorder(
+                //       borderSide: BorderSide(color: Colors.white),
+                //     ),
+                //     focusedBorder: OutlineInputBorder(
+                //       borderSide: BorderSide(color: Colors.white),
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _resetPassword,
+                  style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.white),
+                  ),
+                  child: const Text(
+                    'Reset Password',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                )
               ],
             );
           },

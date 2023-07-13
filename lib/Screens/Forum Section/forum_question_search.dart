@@ -34,8 +34,7 @@ class _QuestionSearchScreenState extends State<QuestionSearchScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF012630),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: const Color(0xFF012630),
         title: const Text(
           "Question Search",
           style: TextStyle(fontWeight: FontWeight.bold),

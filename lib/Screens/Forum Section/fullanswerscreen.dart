@@ -23,8 +23,7 @@ class _QuestionAnswerScreenState extends State<QuestionAnswerScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF012630),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: const Color(0xFF012630),
         title: const Text(
           'Question & Answer',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

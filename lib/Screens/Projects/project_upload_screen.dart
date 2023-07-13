@@ -1,4 +1,4 @@
-// ignore_for_file: camel_case_types
+// ignore_for_file: camel_case_types, use_key_in_widget_constructors, no_leading_underscores_for_local_identifiers
 
 import 'package:project/Import/imports.dart';
 
@@ -18,6 +18,16 @@ class _createScreenState extends State<createScreen> {
   final _urlController = TextEditingController();
 
   void _submitForm() {
+    bool _isValidUrl(String url) {
+      const pattern = r'^(http(s)?://)?'
+          r'((([a-zA-Z0-9-]+\.){1,2}[a-zA-Z]{2,}|'
+          r'((\d{1,3}\.){3}\d{1,3}))|'
+          r'localhost)(:\d{1,5})?(/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*)?'
+          r'([?][-a-zA-Z0-9+&@#/%=~_|])?';
+      final regex = RegExp(pattern);
+      return regex.hasMatch(url);
+    }
+
     if (_formKey.currentState!.validate()) {
       // Form fields are valid, proceed with data submission
 
@@ -27,6 +37,14 @@ class _createScreenState extends State<createScreen> {
       final String features = _featuresController.text;
       final String techStack = _techStackController.text;
       final String url = _urlController.text;
+
+      if (!_isValidUrl(url)) {
+        // Invalid URL entered
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid URL')),
+        );
+        return;
+      }
 
       // Get the current user
       final User? user = FirebaseAuth.instance.currentUser;
